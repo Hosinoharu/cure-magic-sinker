@@ -22,6 +22,7 @@ function save_raw_method<T extends (...args: any[]) => any>(
 }
 
 export const ArrayFunc = {
+    from: Array.from,
     join: save_raw_method(Array.prototype.join),
     unshift: save_raw_method(Array.prototype.unshift),
     push: save_raw_method(Array.prototype.push),

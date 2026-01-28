@@ -62,6 +62,8 @@ fn modify_html_script(node: &rcdom::Handle) {
                 let js = contents.borrow().to_string();
                 match process_js(js) {
                     Ok(new_js) => {
+                        // 将 /script 替换 \/script，防止被浏览器解析
+                        let new_js = new_js.replace("/script", "\\/script");
                         let text = html5ever::tendril::StrTendril::from(new_js);
                         *contents.borrow_mut() = text;
                     }

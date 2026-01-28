@@ -10,6 +10,7 @@ const global_ignore_rules: GlobalIgnore = [
     { enable: true, rule: "\\.min\\.js", invalid: false },
     { enable: true, rule: "-min\\.js", invalid: false },
     { enable: true, rule: "\\.prod\\.js", invalid: false },
+    { enable: true, rule: "\\.umd\\.js", invalid: false },
     { enable: true, rule: "polyfill", invalid: false },
 
     // 常用的第三方库

@@ -182,11 +182,11 @@ const hei = {
         find_value(v).then((result) => {
             logger.log(`find [${v}], count: ${result.length}`);
             for (const item of result) {
-                logger.raw_log(
-                    "  [Match]",
+                logger.log_with_tip(
+                    "Match",
                     item.key,
                     "\n\t=>",
-                    Array.from(item.stack.values()).join("\n\t=> "),
+                    share.ArrayFunc.from(item.stack.values()).join("\n\t=> "),
                 );
             }
         });

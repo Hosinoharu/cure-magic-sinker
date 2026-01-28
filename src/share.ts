@@ -55,6 +55,23 @@ export async function save_storage<T extends keyof ExtensionStorage>(
     await chrome.storage.local.set({ [key]: value });
 }
 
+/** 获取临时存储的、标签页中对应的 main iframe id */
+export async function get_taId_main_iframe(tabId: number) {
+    const key = tabId.toString();
+    const res = await chrome.storage.session.get(key);
+    return res[key] as string | undefined;
+}
+
+/** 临时保存标签页中对应的 main iframe id */
+export async function save_tabId_main_iframe(tabId: number, frameId?: string) {
+    const key = tabId.toString();
+    if (frameId) {
+        await chrome.storage.session.set({ [key]: frameId });
+    } else {
+        await chrome.storage.session.remove(key);
+    }
+}
+
 // #endregion
 
 // #region 日志输出

@@ -89,8 +89,8 @@ function terminate_worker() {
 }
 
 !__IS_DEV__ &&
-    chrome.debugger.onDetach.addListener((debuggee) => {
-        if (debuggee.tabId === tabId) {
+    chrome.debugger.onDetach.addListener((debuggee, reason) => {
+        if (debuggee.tabId === tabId && reason === "canceled_by_user") {
             terminate_worker();
             host_rules.value.enable = false;
             http_server.value.on = false;

@@ -12,6 +12,7 @@ import { CureLogger } from "../share";
 import Protocol from "../types/cdp";
 import { get_global_ignore_rules, get_rule_by_url } from "./storage_manager";
 import { init_swc, swc_handle_code } from "./swc_worker";
+import { get_taId_main_iframe, save_tabId_main_iframe } from "../share";
 
 const logger = new CureLogger("rewriter");
 
@@ -38,7 +39,7 @@ export async function start_debugger(tabId: number) {
         await init_swc();
     } catch (e: any) {
         if (!e.message.includes("Another debugger is already attached")) {
-            logger.error("[start_debugger error]", e.message);
+            logger.error("start_debugger error", e.message);
         }
     }
 }
@@ -49,12 +50,18 @@ export async function stop_debugger(tabId: number) {
     } catch {}
 }
 
+chrome.debugger.onDetach.addListener((source, reason) => {
+    if (reason === "target_closed") {
+        source.tabId && start_debugger(source.tabId);
+    }
+});
+
 /** 和 swc worker 通信来处理 code */
 async function rewrite_code(code: string, type: ReWriteType) {
     return await swc_handle_code(code, type);
 }
 
-// #cure-tip listen cdp message
+// #cure-tip 监听 cdp 消息并重写响应
 // 触发的相关事件：
 // 1. Network.requestWillBeSent
 // 2. Fetch.requestPaused
@@ -64,12 +71,28 @@ async function rewrite_code(code: string, type: ReWriteType) {
 // 6. Network.dataReceived
 // 7. Network.loadingFinished
 chrome.debugger.onEvent.addListener(async (source, method, params) => {
-    // logger.log("CDP message:", method, "=>", params);
+    // logger.log("CDP message", method, "=>", params);
 
     const tabId = source.tabId;
     const requestId = (params as any).requestId as string;
 
-    if (tabId === undefined || tabId === chrome.tabs.TAB_ID_NONE) {
+    if (
+        requestId === undefined ||
+        tabId === undefined ||
+        tabId === chrome.tabs.TAB_ID_NONE
+    ) {
+        return;
+    }
+
+    // 现在需要知道每一个标签页的 main frame id，从而过滤到 iframe 中的请求
+    // 通过该事件可以过滤出来
+    // https://chromedevtools.github.io/devtools-protocol/tot/Network/#event-requestWillBeSent
+    if (method === "Network.requestWillBeSent") {
+        const temp = params as Protocol.Network.RequestWillBeSentEvent;
+        if (temp.type === "Document" && temp.initiator.type === "other") {
+            await save_tabId_main_iframe(tabId, temp.frameId);
+        }
+
         return;
     }
 
@@ -79,9 +102,18 @@ chrome.debugger.onEvent.addListener(async (source, method, params) => {
 
         // request state
         if (temp.responseStatusCode === undefined) {
-            // logger.log(temp.resourceType, "=>", temp.request.url);
-            // await send_fetch_continue_request(tabId, requestId, false);
-            const is_target = await should_handle_by_rule(tabId, temp);
+            const ok = await is_from_main_iframe(tabId, temp.frameId);
+            if (ok) {
+                logger.log(
+                    "request paused",
+                    "Type:",
+                    temp.resourceType,
+                    "=>",
+                    temp.request.url,
+                );
+            }
+
+            const is_target = ok && (await should_handle_by_rule(tabId, temp));
             await send_fetch_continue_request(tabId, requestId, is_target);
         }
         // response state
@@ -91,29 +123,54 @@ chrome.debugger.onEvent.addListener(async (source, method, params) => {
                 return await send_fetch_fulfill_request(tabId, temp);
             }
 
-            const code = await get_req_response(tabId, requestId);
-            const length = code.length;
-            const start = performance.now();
-            const new_code = await rewrite_code(code, type);
+            try {
+                const code = await get_req_response(tabId, requestId);
+                const length = code.length;
+                const start = performance.now();
+                const new_code = await rewrite_code(code, type);
 
-            const duration = ((performance.now() - start) / 1000).toFixed(2);
-            logger.log(
-                `[rewrite ${type} code done]`,
-                duration,
-                "s",
-                "=> length:",
-                length,
-            );
-            const msg: MsgBTC = {
-                type: "done",
-                data: { id: requestId, duration },
-            };
-            log_to_content(tabId, msg);
+                const duration = ((performance.now() - start) / 1000).toFixed(
+                    2,
+                );
+                logger.log(
+                    `handle ${type} code done`,
+                    duration,
+                    "s",
+                    "=> length:",
+                    length,
+                );
+                const msg: MsgBTC = {
+                    type: "done",
+                    data: { id: requestId, duration },
+                };
+                log_to_content(tabId, msg);
 
-            await send_fetch_fulfill_request(tabId, temp, new_code);
+                if (type === "html") {
+                    remove_csp_header(temp);
+                }
+
+                await send_fetch_fulfill_request(tabId, temp, new_code);
+            } catch (e: any) {
+                logger.error("handle code error", e.message);
+                await send_fetch_fulfill_request(tabId, temp);
+            }
         }
     }
 });
+
+function remove_csp_header(params: Protocol.Fetch.RequestPausedEvent) {
+    // #cure-tip 移除 csp header
+    if (params.responseHeaders === undefined) {
+        return;
+    }
+
+    const headers = params.responseHeaders;
+    const new_headers = headers.filter((header) => {
+        return !header.name.toLowerCase().includes("content-security-policy");
+    });
+
+    params.responseHeaders = new_headers;
+}
 
 function is_rule_match_url(rule: OneRule, url: string) {
     if (!rule.enable) {
@@ -146,7 +203,7 @@ function get_rewrite_resource_type(
         //     if (param.request.url.includes(".js")) {
         //         return "js";
         //     }
-        //     logger.warn("[unknown resource type Other]", param);
+        //     logger.warn("unknown resource type Other", param);
         default:
             break;
     }
@@ -173,7 +230,7 @@ async function should_handle_by_rule(
     for (const rule of global_ignore_rules) {
         if (is_rule_match_url(rule, param.request.url)) {
             logger.log(
-                "[global rule ignore]",
+                "global rule ignore",
                 rule.rule,
                 "=>",
                 param.request.url,
@@ -235,7 +292,7 @@ async function log_to_content(tabId: number, msg: MsgBTC, retry_count = 0) {
                     500,
                 );
             } else {
-                logger.log("[log_to_content timeout]", msg);
+                logger.log("log_to_content timeout", msg);
             }
             return;
         }
@@ -294,3 +351,22 @@ async function send_fetch_fulfill_request(
         data as any,
     );
 }
+
+// #region 获取标签页的 main frame id
+
+/** 判断一个请求是否来自 main iframe，如果不是，则不会重写它！
+ * @param tabId 该请求所在的标签页 id
+ * @param in_frameId 该请求所在的 frame id
+ */
+async function is_from_main_iframe(tabId: number, in_frameId: string) {
+    // 从临时存储中获取
+    // 因为现在插件的后台脚本可能休息导致重新运行，如果使用全局变量则会丢失数据！
+    const target = await get_taId_main_iframe(tabId);
+    return in_frameId === target;
+}
+
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+    await save_tabId_main_iframe(tabId);
+});
+
+//#endregion
