@@ -1,0 +1,57 @@
+{
+    "name": "Cure Magic Sinker",
+    "short_name": "Cure Magic Sinker",
+    "manifest_version": 3,
+    "version": "0.0.1",
+    "description": "(。・・)ノ 转生魔法少女正在攻略 JS",
+    "minimum_chrome_version": "120",
+    "icons": {
+        "16": "icons/icon-16.png",
+        "32": "icons/icon-32.png",
+        "64": "icons/icon-64.png",
+        "128": "icons/icon-128.png"
+    },
+    "action": {
+        "default_icon": "icons/icon-64.png"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "run_at": "document_start"
+        }
+    ],
+    "background": {
+        "service_worker": "service_worker.js",
+        "type": "module"
+    },
+    "devtools_page": "devtool/devtools.html",
+    "content_security_policy": {
+        "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+    },
+    "permissions": [
+        "activeTab",
+        "tabs",
+        "storage",
+        "debugger",
+        "nativeMessaging"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "swc.wasm"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ],
+    "key": "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCm5Qmvjqk1QA4NePOPdMZ03RLAEMmJxgVsvYjM3ieXBhJr5zvJvQNluJtB4QXgPo2f8jfTJfM7tLLwR9N+5KbGbBGev53xVBOjWHXiELWWSxnlRy4kg+/5e6ducO0bLmXNc5TZTsBTK4Ak5643JyLAF984uwL7GdqyPRLRajcBatEYI1WP4scG/yHE3IX8b3702PbS8atm3bBo/2mvxby0H0kjJZrcoYaXuEoZj+3+CP/jigqpTx6x7jcXJzvoYDjj0D8N6pK2q3faPxOY5B+ARcF9ADvKY/15+KeZW1k5nC7XbbzME8OfnVsCrXn2raIuRxQAmHjcn0s+Jae+sWkPAgMBAAECggEAFrHur0DnIaakQpDADjIDCsFFW3js7x9OfYsIn1NWbuMUfjfjmXtqitqfwkWnVucquyVlEgGHIgdgjew2hnrxcuofO0czYy3bvcq5vRQonVd5HgSf8bc/Wt3F1u7kT13v2hBtnV9oJ+cyddJLjpRz1Utpv30u2paZdsN3W6Ll9/smWxUVyDIxiM8Uj1oVwBkvVXh2ot6sjEJwWHZDhJvggdu29ZMALh7QiVJxXATiDzNY6c/VK5XUORsqZOb6+R6vnYv4lR16AmCYa79GZULE01QuSFKI7TpELeFaTLWSnq6Y7hOG6QkrWKa3+OePtrP6OILzZJiN9Ph8fiOLns0QgQKBgQDRjSd2pyxX7Gv6uVVWxK2h+wg8kOULmwo2DrgPVH9XUyEbbMqWlDsZhJlVLE+4yefzp4b4EUJd1mhbSAKbgucl11ZlqREDOgqc1ASm1tSLmYUWiUgMDVm3Ek+TGUGySMNuUSvDHvEFtZoEyh6/aMpdsinC3adLv0EZxmFiRRBVNQKBgQDL41vnQpDtLdxOKBAAC6pwjDSS3bPv6brBvOdpNhB5qqNiEf2NNoEfKu9Pg1zCL2CzJxQbdUNzrKklzbmKysSoh1E6VuM8wxpXOQX341lIz4N+eIWYE1qqXWPng8fcl6X6EhRUxt8N1UWAg/I3KDWCoeIlQdofZczqf5QxL2IhswKBgQCfloeCdqhvwY8uoCzc6uZtYRgRwCufnhC1wJnumuRsJdQl5cGX0gX8Vh7MXfXM/n+W8XP5wnMvsdVCB2Js+tF84TVcMNjTA0YHz/RG939hXaac1io3e4dixCA0H90HoSCtCEZy0EKwnXBRy3iFP5I2rzPcwx/gsSQsNAgAZiadLQKBgEgG2cCo02n2eY1iucRKWrvHzArWJ2rptwAaK+YPI2LX1UAf+uKYDqVkFYaRcYNoGVEwzPmmQ13p8RdZxeIyH6cppphleYFNq1CE5Ibd2fzO0jUrfoZqz+y/cTuoYkKbkBb3rBcG6mWIojT0Z+z0V3L+nVVsHhJZdDqjN0bo5lHhAoGAIZeg+2w2dFQAJydZY2V7D8P5SsxoPFdsiYsgmdzygRymuIHhJx0FGcCdYGpc/IXEKvcSUyqEw8r666K6MOBQWer3B0WVeWWB/5aAE0+lX5kXow4R1lzDlRYQdpLEWUz8e05QIfkmq59DfhDJCnmkzG49p0e29g9oJWLc3+g8V8o="
+}

@@ -1,0 +1,12 @@
+todo.md
+node_modules
+dist
+*.wasm
+temp
+.vscode
+native_manifest.json
+*.exe
+*.pem
+cure_magic_sinker_core.js
+*.zip
+test.js

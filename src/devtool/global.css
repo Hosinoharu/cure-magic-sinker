@@ -1,0 +1,83 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    --bg-color: #222;
+    --one-rule-line-height: 1.5rem;
+    --border-color: #4c4d4f;
+    --font-color: #ccc;
+    --cure-idol: #fe5b9b;
+    --cure-wink: #4060ee;
+    --cure-kyun: #cd5ffb;
+    --cure-zukyoon: #a9f9b5;
+    --cure-kiss: #9988f1;
+    --disable-color: #666;
+
+    background-color: #121212;
+    color: var(--font-color);
+    font-family: "Courier New", Courier, monospace;
+    padding: 20px;
+    white-space: nowrap;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #7d7d7d;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #979797;
+}
+
+::-webkit-scrollbar-corner {
+    background: #2d2d2d;
+}
+
+button {
+    appearance: none;
+    width: var(--one-rule-line-height);
+    height: var(--one-rule-line-height);
+    border-radius: 5px;
+    background-color: transparent;
+    color: var(--font-color);
+    cursor: pointer;
+    border: none;
+    outline: none;
+}
+
+button:hover {
+    transform: scale(1.2);
+    transition: transform 0.2s ease-in-out;
+}
+
+input {
+    width: 80%;
+    height: var(--one-rule-line-height);
+    appearance: none;
+    border: 1px solid var(--border-color);
+    background-color: transparent;
+    color: var(--font-color);
+    border-radius: 5px;
+    padding: 0 10px;
+    outline: none;
+    font-family: "Consolas";
+}
+
+input:hover {
+    outline: 1px solid var(--cure-wink);
+}
+
+input:focus {
+    outline: 1px solid var(--cure-zukyoon);
+}

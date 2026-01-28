@@ -1,0 +1,27 @@
+{
+  "name": "cure-magic-sinker",
+  "version": "1.0.0",
+  "description": "Cure Magic Sinker",
+  "scripts": {
+    "build": "npm run build-core &&npm run build-bg && npm run build-content && npm run build-devtool",
+    "build-bg": "vite build --config vite.config.ts",
+    "build-content": "vite build --config ./src/content/vite.config.ts",
+    "build-devtool": "vite build --config ./src/devtool/vite.config.ts",
+    "dev-devtool": "vite dev --config ./src/devtool/vite.config.ts",
+    "build-core": "vite build --config ./cure_magic_sinker_core/vite.config.ts",
+    "dev-ast": "vite dev --config ./cure_magic_sinker_core/ast_handler/vite.config.ts"
+  },
+  "author": "Hosinoharu",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@types/chrome": "^0.1.33",
+    "@types/node": "^25.0.8",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "vite": "^7.3.1"
+  },
+  "dependencies": {
+    "@swc/wasm-web": "^1.15.10",
+    "vue": "^3.5.26"
+  }
+}
